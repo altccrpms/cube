@@ -79,22 +79,14 @@ make
 find %{buildroot} -name '*.la' -exec rm -f {} ';'
 
 # Install doc
-cp -p AUTHORS ChangeLog COPYING NEWS README \
+cp -p AUTHORS ChangeLog COPYING README \
       %{buildroot}%{_defaultdocdir}/%{name}/
 
 # Strip rpath
 chrpath -d -k %{buildroot}%{_bindir}/* || :
 
-# Fix jar install location
-mkdir -p %{buildroot}%{_datadir}/java
-mv %{buildroot}%{_libdir}/CubeReader.jar %{buildroot}%{_datadir}/java/CubeReader.jar
-
 # Install desktop file
 desktop-file-install --dir=%{buildroot}%{_datadir}/applications CUBE.desktop
-
-# Move documentatioin to proper location
-mv %{buildroot}%{_datadir}/%{name}/doc/* %{buildroot}%{_defaultdocdir}/%{name}/
-rm -r %{buildroot}%{_datadir}/%{name}
 
 # Not needed since we install into the system dirs
 rm -r %{buildroot}%{_datadir}/modulefiles
@@ -126,7 +118,6 @@ fi
 %{_defaultdocdir}/cube/AUTHORS
 %{_defaultdocdir}/cube/ChangeLog
 %{_defaultdocdir}/cube/COPYING
-%{_defaultdocdir}/cube/NEWS
 %{_defaultdocdir}/cube/README
 %{_bindir}/cube
 %{_bindir}/cube3to4
@@ -159,6 +150,7 @@ fi
 %{_libdir}/lib%{name}*.so.4*
 %{_datadir}/applications/CUBE.desktop
 %{_datadir}/icons/Cube.xpm
+%{_datadir}/%{name}/
 
 %files devel
 %{_bindir}/cube-config
