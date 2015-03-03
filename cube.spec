@@ -1,13 +1,11 @@
 Name:           cube
-Version:        4.2.3
-Release:        5%{?dist}
+Version:        4.3.1
+Release:        1%{?dist}
 Summary:        CUBE Uniform Behavioral Encoding generic presentation component
 
 License:        BSD
 URL:            http://www.scalasca.org/software/cube-4.x/download.html
-Source0:        http://apps.fz-juelich.de/scalasca/releases/cube/4.2/dist/cube-%{version}.tar.gz
-# Lnk libcube4 against -lz
-Patch0:         cube-link.patch
+Source0:        http://apps.fz-juelich.de/scalasca/releases/cube/4.3/dist/cube-%{version}.tar.gz
 
 BuildRequires:  dbus-devel
 BuildRequires:  qt4-devel
@@ -59,7 +57,6 @@ The %{name}-java package contains a CUBE reader written in Java.
 
 %prep
 %setup -q
-%patch0 -p1 -b .link
 sed -i -e 's/"//g' CUBE.desktop.in
 
 
@@ -140,7 +137,7 @@ performance data for parallel programs</summary>
 EOF
 
 # Strip rpath
-chrpath -d -k %{buildroot}%{_bindir}/* || :
+chrpath -d -k %{buildroot}%{_bindir}/* %{buildroot}%{_libdir}/{,cube-plugins/}*.so  || :
 
 # Install desktop file
 desktop-file-install --dir=%{buildroot}%{_datadir}/applications CUBE.desktop
@@ -183,8 +180,8 @@ fi
 %{_bindir}/cube_canonize
 %{_bindir}/cube_clean
 %{_bindir}/cube_cmp
+%{_bindir}/cube_commoncalltree
 %{_bindir}/cube_cut
-%{_bindir}/cube_derive
 %{_bindir}/cube_diff
 %{_bindir}/cube_dump
 %{_bindir}/cube_exclusify
@@ -204,10 +201,12 @@ fi
 %{_bindir}/cube_test
 %{_bindir}/cube_topoassist
 %{_bindir}/tau2cube
-%{_libdir}/lib%{name}*.so.4*
+%{_libdir}/lib%{name}*.so.7*
+%{_libdir}/libgraphwidgetcommon-plugin.so.7*
+%{_libdir}/cube-plugins/
 %{_datadir}/appdata/*.appdata.xml
 %{_datadir}/applications/CUBE.desktop
-%{_datadir}/icons/Cube.xpm
+%{_datadir}/icons/*
 %{_datadir}/%{name}/
 
 %files devel
@@ -215,7 +214,10 @@ fi
 %{_bindir}/cube-config-backend
 %{_bindir}/cube-config-frontend
 %{_includedir}/%{name}*/
+%{_includedir}/cubegui/
 %{_libdir}/lib%{name}*.so
+%{_libdir}/libgraphwidgetcommon-plugin.so
+%{_defaultdocdir}/cube/example/
 
 %files doc
 %{_defaultdocdir}/cube/
@@ -225,6 +227,9 @@ fi
 
 
 %changelog
+* Tue May 5 2015 Orion Poplawski <orion@cora.nwra.com> - 4.3.1-1
+- Update to 4.3.1
+
 * Sat May 02 2015 Kalev Lember <kalevlember@gmail.com> - 4.2.3-5
 - Rebuilt for GCC 5 C++11 ABI change
 
