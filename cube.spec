@@ -1,6 +1,6 @@
 Name:           cube
 Version:        4.2.3
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        CUBE Uniform Behavioral Encoding generic presentation component
 
 License:        BSD
@@ -167,6 +167,9 @@ fi
 
 
 %changelog
+* Tue Mar  3 2015 Peter Robinson <pbrobinson@fedoraproject.org> 4.2.3-3
+- rebuild (gcc5)
+
 * Sat Aug 16 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.2.3-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
 
