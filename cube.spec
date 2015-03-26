@@ -1,6 +1,6 @@
 Name:           cube
 Version:        4.2.3
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        CUBE Uniform Behavioral Encoding generic presentation component
 
 License:        BSD
@@ -82,6 +82,63 @@ find %{buildroot} -name '*.la' -exec rm -f {} ';'
 cp -p AUTHORS ChangeLog COPYING README \
       %{buildroot}%{_defaultdocdir}/%{name}/
 
+# Register as an application to be visible in the software center
+#
+# NOTE: It would be *awesome* if this file was maintained by the upstream
+# project, translated and installed into the right place during `make install`.
+#
+# See http://www.freedesktop.org/software/appstream/docs/ for more details.
+#
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/appdata
+cat > $RPM_BUILD_ROOT%{_datadir}/appdata/CUBE.appdata.xml <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) 2014 Forschungszentrum Juelich GmbH, Germany -->
+
+<application>
+ <id type="desktop">CUBE.desktop</id>
+ <metadata_license>CC0-1.0</metadata_license>
+ <project_license>BSD-3-Clause</project_license>
+ <name>Cube</name>
+ <summary>A presentation component suitable for displaying
+performance data for parallel programs</summary>
+ <description>
+  <p>
+    "Cube" (CUBE Uniform Behavioral Encoding) is a presentation
+    component suitable for displaying a wide variety of performance
+    data for parallel programs including MPI and OpenMP applications.
+  </p>
+  <p>
+    Program performance is represented in a multi-dimensional space including various program and
+    system resources. The tool allows the interactive exploration of this
+    space in a scalable fashion and browsing the different kinds of
+    performance behavior with ease.  All metrics are uniformly accommodated in the 
+    same display and thus provide the ability to easily compare the effects of 
+    different kinds of program behavior.
+  </p>
+  <p>
+    "Cube" also includes a library to
+    read and write performance data as well as operators to compare,
+    integrate, and summarize data from different experiments. 
+  </p>
+  <p>
+    The Cube 4.x release series uses an incompatible API and
+    file format compared to previous versions, however,
+    existing files in CUBE3 format can still be processed
+    for backwards-compatibility.    
+  </p>
+ </description>
+ <screenshots>
+  <screenshot type="default" width="1152" height="648">http://apps.fz-juelich.de/scalasca/releases/cube/screenshots/topo1.png</screenshot>
+  <screenshot width="1152" height="648">http://apps.fz-juelich.de/scalasca/releases/cube/screenshots/topo2.png</screenshot>
+  <screenshot width="1152" height="648">http://apps.fz-juelich.de/scalasca/releases/cube/screenshots/box.png</screenshot>
+  <screenshot width="1152" height="648">http://apps.fz-juelich.de/scalasca/releases/cube/screenshots/flat.png</screenshot>
+  <screenshot width="1152" height="648">http://apps.fz-juelich.de/scalasca/releases/cube/screenshots/palette.png</screenshot>
+ </screenshots>
+ <url type="homepage">http://www.scalasca.org/software/cube-4.x/download.html</url>
+ <updatecontact>scalasca_at_fz-juelich.de</updatecontact>
+</application>
+EOF
+
 # Strip rpath
 chrpath -d -k %{buildroot}%{_bindir}/* || :
 
@@ -148,6 +205,7 @@ fi
 %{_bindir}/cube_topoassist
 %{_bindir}/tau2cube
 %{_libdir}/lib%{name}*.so.4*
+%{_datadir}/appdata/*.appdata.xml
 %{_datadir}/applications/CUBE.desktop
 %{_datadir}/icons/Cube.xpm
 %{_datadir}/%{name}/
@@ -167,6 +225,9 @@ fi
 
 
 %changelog
+* Thu Mar 26 2015 Richard Hughes <rhughes@redhat.com> - 4.2.3-4
+- Add an AppData file for the software center
+
 * Tue Mar  3 2015 Peter Robinson <pbrobinson@fedoraproject.org> 4.2.3-3
 - rebuild (gcc5)
 
