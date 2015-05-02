@@ -1,6 +1,6 @@
 Name:           cube
 Version:        4.2.3
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        CUBE Uniform Behavioral Encoding generic presentation component
 
 License:        BSD
@@ -225,6 +225,9 @@ fi
 
 
 %changelog
+* Sat May 02 2015 Kalev Lember <kalevlember@gmail.com> - 4.2.3-5
+- Rebuilt for GCC 5 C++11 ABI change
+
 * Thu Mar 26 2015 Richard Hughes <rhughes@redhat.com> - 4.2.3-4
 - Add an AppData file for the software center
 
