@@ -1,6 +1,6 @@
 Name:           cube
-Version:        4.3.1
-Release:        2%{?dist}
+Version:        4.3.2
+Release:        1%{?dist}
 Summary:        CUBE Uniform Behavioral Encoding generic presentation component
 
 License:        BSD
@@ -44,17 +44,6 @@ BuildArch:      noarch
 The %{name}-doc package contains documentation for %{name}.
 
 
-%package        java
-Summary:        CUBE reader for Java
-Requires:       %{name} = %{version}-%{release}
-BuildArch:      noarch
-Requires:       java
-Requires:       jpackage-utils
-
-%description    java
-The %{name}-java package contains a CUBE reader written in Java.
-
-
 %prep
 %setup -q
 sed -i -e 's/"//g' CUBE.desktop.in
@@ -65,7 +54,6 @@ sed -i -e 's/"//g' CUBE.desktop.in
 %configure --disable-static \
   --disable-silent-rules \
   --with-platform=linux \
-  --with-java-reader=yes \
   --with-xerces-name=xerces-j2.jar
 make
 # %{?_smp_mflags} - CubeReader.jar fails
@@ -182,6 +170,7 @@ fi
 %{_bindir}/cube_cmp
 %{_bindir}/cube_commoncalltree
 %{_bindir}/cube_cut
+%{_bindir}/cube_derive
 %{_bindir}/cube_diff
 %{_bindir}/cube_dump
 %{_bindir}/cube_exclusify
@@ -214,7 +203,6 @@ fi
 %{_bindir}/cube-config-backend
 %{_bindir}/cube-config-frontend
 %{_includedir}/%{name}*/
-%{_includedir}/cubegui/
 %{_libdir}/lib%{name}*.so
 %{_libdir}/libgraphwidgetcommon-plugin.so
 %{_defaultdocdir}/cube/example/
@@ -222,11 +210,12 @@ fi
 %files doc
 %{_defaultdocdir}/cube/
 
-%files java
-%{_datadir}/java/CubeReader.jar
-
 
 %changelog
+* Fri Jun 19 2015 Orion Poplawski <orion@cora.nwra.com> - 4.3.2-1
+- Update to 4.3.2
+- Drop java sub-package, moved to separate release
+
 * Wed Jun 17 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.3.1-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
 
