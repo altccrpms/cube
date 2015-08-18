@@ -1,6 +1,6 @@
 Name:           cube
 Version:        4.3.2
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        CUBE Uniform Behavioral Encoding generic presentation component
 
 License:        BSD
@@ -9,9 +9,6 @@ Source0:        http://apps.fz-juelich.de/scalasca/releases/cube/4.3/dist/cube-%
 
 BuildRequires:  dbus-devel
 BuildRequires:  qt4-devel
-BuildRequires:  java-devel
-BuildRequires:  jpackage-utils
-BuildRequires:  xerces-j2
 BuildRequires:  chrpath
 BuildRequires:  desktop-file-utils
 
@@ -26,6 +23,12 @@ metrics are uniformly accommodated in the same display and thus provide the
 ability to easily compare the effects of different kinds of performance
 behavior.
 
+
+%package        libs
+Summary:        Libraries for %{name}
+
+%description    libs
+Libraries required by %{name}
 
 %package        devel
 Summary:        Development files for %{name}
@@ -46,7 +49,7 @@ The %{name}-doc package contains documentation for %{name}.
 
 %prep
 %setup -q
-sed -i -e 's/"//g' CUBE.desktop.in
+sed -i -e 's/"//g' CUBE.desktop.in # "
 
 
 %build
@@ -190,13 +193,15 @@ fi
 %{_bindir}/cube_test
 %{_bindir}/cube_topoassist
 %{_bindir}/tau2cube
-%{_libdir}/lib%{name}*.so.7*
 %{_libdir}/libgraphwidgetcommon-plugin.so.7*
 %{_libdir}/cube-plugins/
 %{_datadir}/appdata/*.appdata.xml
 %{_datadir}/applications/CUBE.desktop
 %{_datadir}/icons/*
 %{_datadir}/%{name}/
+
+%files libs
+%{_libdir}/lib%{name}*.so.7*
 
 %files devel
 %{_bindir}/cube-config
@@ -212,6 +217,10 @@ fi
 
 
 %changelog
+* Fri Jun 26 2015 Dave Love <d.love@liverpool.ac.uk> - 4.3.2-2
+- Make separate libs package (for scorep)
+- Don't BR Java stuff
+
 * Fri Jun 19 2015 Orion Poplawski <orion@cora.nwra.com> - 4.3.2-1
 - Update to 4.3.2
 - Drop java sub-package, moved to separate release
