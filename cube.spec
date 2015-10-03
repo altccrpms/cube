@@ -1,6 +1,6 @@
 Name:           cube
 Version:        4.3.2
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        CUBE Uniform Behavioral Encoding generic presentation component
 
 License:        BSD
@@ -32,7 +32,9 @@ Libraries required by %{name}
 
 %package        devel
 Summary:        Development files for %{name}
-Requires:       %{name}%{?_isa} = %{version}-%{release}
+# cube-devel may be required by profiling packages on compute nodes,
+# so don't require cube, to avoid graphics
+Requires:       %{name}-libs%{?_isa} = %{version}-%{release}
 
 %description    devel
 The %{name}-devel package contains libraries and header files for
@@ -217,6 +219,9 @@ fi
 
 
 %changelog
+* Sat Oct  3 2015 Dave Love <loveshack@fedoraproject.org> - 4.3.2-3
+- Have devel package depend on cube-libs, not cube
+
 * Fri Jun 26 2015 Dave Love <d.love@liverpool.ac.uk> - 4.3.2-2
 - Make separate libs package (for scorep)
 - Don't BR Java stuff
