@@ -1,6 +1,6 @@
 Name:           cube
-Version:        4.3.2
-Release:        3%{?dist}
+Version:        4.3.3
+Release:        1%{?dist}
 Summary:        CUBE Uniform Behavioral Encoding generic presentation component
 
 License:        BSD
@@ -219,6 +219,9 @@ fi
 
 
 %changelog
+* Fri Dec 11 2015 Orion Poplawski <orion@cora.nwra.com> - 4.3.3-1
+- Update to 4.3.3
+
 * Sat Oct  3 2015 Dave Love <loveshack@fedoraproject.org> - 4.3.2-3
 - Have devel package depend on cube-libs, not cube
 
