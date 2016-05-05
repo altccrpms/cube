@@ -54,7 +54,6 @@ The %{name}-doc package contains documentation for %{name}.
 
 
 %build
-# We need to explicitly set CXX here so that scorep picks it up
 %configure --disable-static \
   --disable-silent-rules \
   --with-platform=linux
