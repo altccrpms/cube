@@ -1,4 +1,36 @@
-Name:           cube
+# AltCCRPMS
+%global _cc_name %{getenv:COMPILER_NAME}
+%global _cc_version %{getenv:COMPILER_VERSION}
+%global _cc_name_ver %{_cc_name}-%{_cc_version}
+%global _mpi_name %{getenv:MPI_NAME}
+%if "%{_mpi_name}" == ""
+%global _with_mpi 0
+%else
+%global _with_mpi 1
+%endif
+%if 0%{?_with_mpi}
+%global _mpi_version %{getenv:MPI_VERSION}
+%global _mpi_name_ver %{_mpi_name}-%{_mpi_version}
+%global _name_suffix -%{_cc_name}-%{_mpi_name}
+%global _name_ver_suffix -%{_cc_name_ver}-%{_mpi_name_ver}
+%global _prefix /opt/%{_cc_name_ver}/%{_mpi_name_ver}/%{shortname}-%{version}
+%global _modulefiledir /opt/modulefiles/MPI/%{_cc_name}/%{_cc_version}/%{_mpi_name}/%{_mpi_version}/%{shortname}
+%else
+%global _name_suffix -%{_cc_name}
+%global _name_ver_suffix -%{_cc_name_ver}
+%global _prefix /opt/%{_cc_name_ver}/%{shortname}-%{version}
+%global _modulefiledir /opt/modulefiles/Compiler/%{_cc_name}/%{_cc_version}/%{shortname}
+%endif
+%global _sysconfdir %{_prefix}/etc
+
+%undefine _missing_build_ids_terminate_build
+
+%global shortname cube
+
+# We can't build the frontend with the Intel C++ compiler without having Qt built with intel compiler
+%bcond_with frontend
+
+Name:           %{shortname}-4.3.3%{_name_ver_suffix}
 Version:        4.3.3
 Release:        2%{?dist}
 Summary:        CUBE Uniform Behavioral Encoding generic presentation component
@@ -6,11 +38,19 @@ Summary:        CUBE Uniform Behavioral Encoding generic presentation component
 License:        BSD
 URL:            http://www.scalasca.org/software/cube-4.x/download.html
 Source0:        http://apps.fz-juelich.de/scalasca/releases/cube/4.3/dist/cube-%{version}.tar.gz
+Source1:        %{shortname}.module.in
 
 BuildRequires:  dbus-devel
 BuildRequires:  qt4-devel
 BuildRequires:  chrpath
 BuildRequires:  desktop-file-utils
+
+# AltCCRPMS
+Requires:       environment(modules)
+Provides:       %{shortname}%{_name_suffix} = %{version}-%{release}
+Provides:       %{shortname}%{_name_suffix}%{?_isa} = %{version}-%{release}
+Provides:       %{shortname}%{_name_ver_suffix} = %{version}-%{release}
+Provides:       %{shortname}%{_name_ver_suffix}%{?_isa} = %{version}-%{release}
 
 %description
 CUBE (CUBE Uniform Behavioral Encoding) is a generic presentation component
@@ -26,6 +66,11 @@ behavior.
 
 %package        libs
 Summary:        Libraries for %{name}
+# AltCCRPMS
+Provides:       %{shortname}%{_name_suffix}-libs = %{version}-%{release}
+Provides:       %{shortname}%{_name_suffix}-libs%{?_isa} = %{version}-%{release}
+Provides:       %{shortname}%{_name_ver_suffix}-libs = %{version}-%{release}
+Provides:       %{shortname}%{_name_ver_suffix}-libs%{?_isa} = %{version}-%{release}
 
 %description    libs
 Libraries required by %{name}
@@ -35,6 +80,11 @@ Summary:        Development files for %{name}
 # cube-devel may be required by profiling packages on compute nodes,
 # so don't require cube, to avoid graphics
 Requires:       %{name}-libs%{?_isa} = %{version}-%{release}
+# AltCCRPMS
+Provides:       %{shortname}%{_name_suffix}-devel = %{version}-%{release}
+Provides:       %{shortname}%{_name_suffix}-devel%{?_isa} = %{version}-%{release}
+Provides:       %{shortname}%{_name_ver_suffix}-devel = %{version}-%{release}
+Provides:       %{shortname}%{_name_ver_suffix}-devel%{?_isa} = %{version}-%{release}
 
 %description    devel
 The %{name}-devel package contains libraries and header files for
@@ -44,24 +94,34 @@ developing applications that use %{name}.
 %package        doc
 Summary:        Documentation for %{name}
 BuildArch:      noarch
+# AltCCRPMS
+Provides:       %{shortname}%{_name_suffix}-doc = %{version}-%{release}
+Provides:       %{shortname}%{_name_ver_suffix}-doc = %{version}-%{release}
 
 %description    doc
 The %{name}-doc package contains documentation for %{name}.
 
 
 %prep
-%setup -q
+%setup -q -n %{shortname}-%{version}
 sed -i -e 's/"//g' CUBE.desktop.in # "
 
 
 %build
-# We need to explicitly set CXX here so that scorep picks it up
+for f in platform-frontend-user-provided platform-backend-user-provided platform-mpi-user-provided platform-shmem-user-provided
+do
+  cat > $f <<EOF
+CC=$CC
+CXX=$CXX
+F90=$FC
+EOF
+done
 %configure --disable-static \
   --disable-silent-rules \
   --with-platform=linux \
+  --with-custom-compilers \
   --with-xerces-name=xerces-j2.jar
-make
-# %{?_smp_mflags} - CubeReader.jar fails
+make %{?_smp_mflags}
 
 
 %install
@@ -70,7 +130,7 @@ find %{buildroot} -name '*.la' -exec rm -f {} ';'
 
 # Install doc
 cp -p AUTHORS ChangeLog COPYING README \
-      %{buildroot}%{_defaultdocdir}/%{name}/
+      %{buildroot}%{_defaultdocdir}/%{shortname}/
 
 # Register as an application to be visible in the software center
 #
@@ -129,44 +189,36 @@ performance data for parallel programs</summary>
 </application>
 EOF
 
-# Strip rpath
-chrpath -d -k %{buildroot}%{_bindir}/* %{buildroot}%{_libdir}/{,cube-plugins/}*.so  || :
-
 # Install desktop file
 desktop-file-install --dir=%{buildroot}%{_datadir}/applications CUBE.desktop
 
-# Not needed since we install into the system dirs
+# Not needed since we install into a different location
 rm -r %{buildroot}%{_datadir}/modulefiles
+
+# AltCCRPMS
+# Make the environment-modules file
+mkdir -p %{buildroot}%{_modulefiledir}
+# Since we're doing our own substitution here, use our own definitions.
+sed -e 's#@PREFIX@#'%{_prefix}'#' -e 's#@LIB@#%{_lib}#' < %SOURCE1 >  %{buildroot}%{_modulefiledir}/%{version}
 
 
 %check
 make check
 
 
-%post
-/sbin/ldconfig
-/bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
-/usr/bin/update-desktop-database &> /dev/null || :
-
-%postun
-/sbin/ldconfig
-if [ $1 -eq 0 ] ; then
-    /bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null
-    /usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
-fi
-/usr/bin/update-desktop-database &> /dev/null || :
-
-%posttrans
-/usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
-
-
 %files
+# Own all directory paths
+%dir %{_prefix}
+%dir %{_bindir}
+%dir %{_libdir}
 %dir %{_defaultdocdir}/cube/
 %{_defaultdocdir}/cube/AUTHORS
 %{_defaultdocdir}/cube/ChangeLog
 %{_defaultdocdir}/cube/COPYING
 %{_defaultdocdir}/cube/README
+%if %{with frontend}
 %{_bindir}/cube
+%endif
 %{_bindir}/cube3to4
 %{_bindir}/cube4to3
 %{_bindir}/cube_calltree
@@ -195,23 +247,28 @@ fi
 %{_bindir}/cube_test
 %{_bindir}/cube_topoassist
 %{_bindir}/tau2cube
+%if %{with frontend}
 %{_libdir}/libgraphwidgetcommon-plugin.so.7*
 %{_libdir}/cube-plugins/
+%endif
 %{_datadir}/appdata/*.appdata.xml
 %{_datadir}/applications/CUBE.desktop
 %{_datadir}/icons/*
-%{_datadir}/%{name}/
+%{_datadir}/%{shortname}/
 
 %files libs
-%{_libdir}/lib%{name}*.so.7*
+%{_libdir}/lib%{shortname}*.so.7*
+%{_modulefiledir}
 
 %files devel
 %{_bindir}/cube-config
 %{_bindir}/cube-config-backend
 %{_bindir}/cube-config-frontend
-%{_includedir}/%{name}*/
-%{_libdir}/lib%{name}*.so
+%{_includedir}/%{shortname}*/
+%{_libdir}/lib%{shortname}*.so
+%if %{with frontend}
 %{_libdir}/libgraphwidgetcommon-plugin.so
+%endif
 %{_defaultdocdir}/cube/example/
 
 %files doc
