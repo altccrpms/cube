@@ -1,6 +1,6 @@
 Name:           cube
-Version:        4.3.3
-Release:        2%{?dist}
+Version:        4.3.4
+Release:        1%{?dist}
 Summary:        CUBE Uniform Behavioral Encoding generic presentation component
 
 License:        BSD
@@ -51,17 +51,14 @@ The %{name}-doc package contains documentation for %{name}.
 
 %prep
 %setup -q
-sed -i -e 's/"//g' CUBE.desktop.in # "
 
 
 %build
 # We need to explicitly set CXX here so that scorep picks it up
 %configure --disable-static \
   --disable-silent-rules \
-  --with-platform=linux \
-  --with-xerces-name=xerces-j2.jar
-make
-# %{?_smp_mflags} - CubeReader.jar fails
+  --with-platform=linux
+make %{?_smp_mflags}
 
 
 %install
@@ -133,10 +130,20 @@ EOF
 chrpath -d -k %{buildroot}%{_bindir}/* %{buildroot}%{_libdir}/{,cube-plugins/}*.so  || :
 
 # Install desktop file
+cat <<EOF >CUBE.desktop
+[Desktop Entry]
+Comment=Performance profile browser CUBE
+Encoding=UTF-8
+Exec=/usr/bin/cube
+Icon=/usr/share/icons/Cube.xpm
+InitialPreference=3
+MimeType=application/cube;
+Name=Cube (scalasca.org)
+Terminal=false
+Type=Application
+Categories=Science;ComputerScience;DataVisualization;
+EOF
 desktop-file-install --dir=%{buildroot}%{_datadir}/applications CUBE.desktop
-
-# Not needed since we install into the system dirs
-rm -r %{buildroot}%{_datadir}/modulefiles
 
 
 %check
@@ -219,6 +226,12 @@ fi
 
 
 %changelog
+* Wed May  4 2016 Dave Love <loveshack@fedoraproject.org> - 4.3.4-1
+- Update to 4.3.4
+- Adjust for desktop and module files removed from distribution
+- Remove xerces from configure
+- Reinstate smp make
+
 * Wed Feb 03 2016 Fedora Release Engineering <releng@fedoraproject.org> - 4.3.3-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
 
