@@ -1,16 +1,18 @@
 Name:           cube
 Version:        4.3.4
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        CUBE Uniform Behavioral Encoding generic presentation component
 
 License:        BSD
 URL:            http://www.scalasca.org/software/cube-4.x/download.html
 Source0:        http://apps.fz-juelich.de/scalasca/releases/cube/4.3/dist/cube-%{version}.tar.gz
-
+# disable check for new versions
+Patch1:         cube-nocheck.patch
 BuildRequires:  dbus-devel
 BuildRequires:  qt4-devel
 BuildRequires:  chrpath
 BuildRequires:  desktop-file-utils
+Requires:       %{name}-libs%{?_isa} = %{version}-%{release}
 
 %description
 CUBE (CUBE Uniform Behavioral Encoding) is a generic presentation component
@@ -51,6 +53,7 @@ The %{name}-doc package contains documentation for %{name}.
 
 %prep
 %setup -q
+%patch1 -p1
 
 
 %build
@@ -225,6 +228,10 @@ fi
 
 
 %changelog
+* Thu May  5 2016 Dave Love <loveshack@fedoraproject.org> - 4.3.4-2
+- Have cube require matching cube-libs
+- Don't do network check for new version
+
 * Wed May  4 2016 Dave Love <loveshack@fedoraproject.org> - 4.3.4-1
 - Update to 4.3.4
 - Adjust for desktop and module files removed from distribution
