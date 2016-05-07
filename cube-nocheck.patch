@@ -1,5 +1,6 @@
----cube-4.3.4/src/GUI-qt/display/VersionCheckWidget.cpp~	2016-04-03 00:05:37.942066948 +0100
-+++cube-4.3.4/src/GUI-qt/display/VersionCheckWidget.cpp	2016-05-06 16:17:27.684217301 +0100
+diff -u /home/dlove/rpmbuild/BUILD/cube-4.3.4/src/GUI-qt/display/VersionCheckWidget.cpp\~ /home/dlove/rpmbuild/BUILD/cube-4.3.4/src/GUI-qt/display/VersionCheckWidget.cpp
+--- cube-4.3.4/src/GUI-qt/display/VersionCheckWidget.cpp~	2016-04-03 00:05:37.942066948 +0100
++++ cube-4.3.4/src/GUI-qt/display/VersionCheckWidget.cpp	2016-05-06 17:16:31.648143908 +0100
 @@ -52,7 +52,8 @@
      url              = QUrl( UPDATE_CHECK_URL );
      download         = NULL;
@@ -10,3 +11,4 @@
      if ( !no_http )
      {
          updateDescription =   tr( "Check for update is not performed yet." );
+
