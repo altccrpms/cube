@@ -1,6 +1,6 @@
 Name:           cube
 Version:        4.3.4
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        CUBE Uniform Behavioral Encoding generic presentation component
 
 License:        BSD
@@ -153,10 +153,12 @@ make check
 
 
 %post
+/sbin/ldconfig
 /bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
 /usr/bin/update-desktop-database &> /dev/null || :
 
 %postun
+/sbin/ldconfig
 if [ $1 -eq 0 ] ; then
     /bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null
     /usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
@@ -229,6 +231,9 @@ fi
 
 
 %changelog
+* Tue May 10 2016 Dave Love <loveshack@fedoraproject.org> - 4.3.4-4
+- Run ldconfig for both main as well as libs (for libgraphwidgetcommon-plugin)
+
 * Mon May  9 2016 Dave Love <loveshack@fedoraproject.org> - 4.3.4-3
 - Run ldconfig for libs package, not main
 
