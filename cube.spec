@@ -1,38 +1,13 @@
-# AltCCRPMS
-%global _cc_name %{getenv:COMPILER_NAME}
-%global _cc_version %{getenv:COMPILER_VERSION}
-%global _cc_name_ver %{_cc_name}-%{_cc_version}
-%global _mpi_name %{getenv:MPI_NAME}
-%if "%{_mpi_name}" == ""
-%global _with_mpi 0
-%else
-%global _with_mpi 1
-%endif
-%if 0%{?_with_mpi}
-%global _mpi_version %{getenv:MPI_VERSION}
-%global _mpi_name_ver %{_mpi_name}-%{_mpi_version}
-%global _name_suffix -%{_cc_name}-%{_mpi_name}
-%global _name_ver_suffix -%{_cc_name_ver}-%{_mpi_name_ver}
-%global _prefix /opt/%{_cc_name_ver}/%{_mpi_name_ver}/%{shortname}-%{version}
-%global _modulefiledir /opt/modulefiles/MPI/%{_cc_name}/%{_cc_version}/%{_mpi_name}/%{_mpi_version}/%{shortname}
-%else
-%global _name_suffix -%{_cc_name}
-%global _name_ver_suffix -%{_cc_name_ver}
-%global _prefix /opt/%{_cc_name_ver}/%{shortname}-%{version}
-%global _modulefiledir /opt/modulefiles/Compiler/%{_cc_name}/%{_cc_version}/%{shortname}
-%endif
-%global _sysconfdir %{_prefix}/etc
-
-%undefine _missing_build_ids_terminate_build
-
 %global shortname cube
-
+%global ver 4.3.4
+%{?altcc_init}
 # We can't build the frontend with the Intel C++ compiler without having Qt built with intel compiler
-%bcond_with frontend
+%{?altcc:%bcond_with frontend}
+%{!?altcc:%bcond_without frontend}
 
-Name:           %{shortname}-4.3.3%{_name_ver_suffix}
-Version:        4.3.3
-Release:        2%{?dist}
+Name:           %{shortname}%{?altcc_pkg_suffix}
+Version:        4.3.4
+Release:        4%{?dist}
 Summary:        CUBE Uniform Behavioral Encoding generic presentation component
 
 License:        BSD
@@ -40,17 +15,16 @@ URL:            http://www.scalasca.org/software/cube-4.x/download.html
 Source0:        http://apps.fz-juelich.de/scalasca/releases/cube/4.3/dist/cube-%{version}.tar.gz
 Source1:        %{shortname}.module.in
 
+# disable check for new versions
+Patch1:         cube-nocheck.patch
 BuildRequires:  dbus-devel
 BuildRequires:  qt4-devel
 BuildRequires:  chrpath
 BuildRequires:  desktop-file-utils
+Requires:       %{name}-libs%{?_isa} = %{version}-%{release}
 
-# AltCCRPMS
-Requires:       environment(modules)
-Provides:       %{shortname}%{_name_suffix} = %{version}-%{release}
-Provides:       %{shortname}%{_name_suffix}%{?_isa} = %{version}-%{release}
-Provides:       %{shortname}%{_name_ver_suffix} = %{version}-%{release}
-Provides:       %{shortname}%{_name_ver_suffix}%{?_isa} = %{version}-%{release}
+%{?altcc_reqmodules}
+%{?altcc_provide}
 
 %description
 CUBE (CUBE Uniform Behavioral Encoding) is a generic presentation component
@@ -66,11 +40,7 @@ behavior.
 
 %package        libs
 Summary:        Libraries for %{name}
-# AltCCRPMS
-Provides:       %{shortname}%{_name_suffix}-libs = %{version}-%{release}
-Provides:       %{shortname}%{_name_suffix}-libs%{?_isa} = %{version}-%{release}
-Provides:       %{shortname}%{_name_ver_suffix}-libs = %{version}-%{release}
-Provides:       %{shortname}%{_name_ver_suffix}-libs%{?_isa} = %{version}-%{release}
+%{?altcc:%altcc_provide libs}
 
 %description    libs
 Libraries required by %{name}
@@ -80,11 +50,7 @@ Summary:        Development files for %{name}
 # cube-devel may be required by profiling packages on compute nodes,
 # so don't require cube, to avoid graphics
 Requires:       %{name}-libs%{?_isa} = %{version}-%{release}
-# AltCCRPMS
-Provides:       %{shortname}%{_name_suffix}-devel = %{version}-%{release}
-Provides:       %{shortname}%{_name_suffix}-devel%{?_isa} = %{version}-%{release}
-Provides:       %{shortname}%{_name_ver_suffix}-devel = %{version}-%{release}
-Provides:       %{shortname}%{_name_ver_suffix}-devel%{?_isa} = %{version}-%{release}
+%{?altcc:%altcc_provide devel}
 
 %description    devel
 The %{name}-devel package contains libraries and header files for
@@ -94,9 +60,7 @@ developing applications that use %{name}.
 %package        doc
 Summary:        Documentation for %{name}
 BuildArch:      noarch
-# AltCCRPMS
-Provides:       %{shortname}%{_name_suffix}-doc = %{version}-%{release}
-Provides:       %{shortname}%{_name_ver_suffix}-doc = %{version}-%{release}
+%{?altcc:%altcc_provide doc}
 
 %description    doc
 The %{name}-doc package contains documentation for %{name}.
@@ -104,7 +68,7 @@ The %{name}-doc package contains documentation for %{name}.
 
 %prep
 %setup -q -n %{shortname}-%{version}
-sed -i -e 's/"//g' CUBE.desktop.in # "
+%patch1 -p1
 
 
 %build
@@ -190,16 +154,22 @@ performance data for parallel programs</summary>
 EOF
 
 # Install desktop file
+cat <<EOF >CUBE.desktop
+[Desktop Entry]
+Comment=Performance profile browser CUBE
+Encoding=UTF-8
+Exec=/usr/bin/cube
+Icon=/usr/share/icons/Cube.xpm
+InitialPreference=3
+MimeType=application/cube;
+Name=Cube (scalasca.org)
+Terminal=false
+Type=Application
+Categories=Science;ComputerScience;DataVisualization;
+EOF
 desktop-file-install --dir=%{buildroot}%{_datadir}/applications CUBE.desktop
 
-# Not needed since we install into a different location
-rm -r %{buildroot}%{_datadir}/modulefiles
-
-# AltCCRPMS
-# Make the environment-modules file
-mkdir -p %{buildroot}%{_modulefiledir}
-# Since we're doing our own substitution here, use our own definitions.
-sed -e 's#@PREFIX@#'%{_prefix}'#' -e 's#@LIB@#%{_lib}#' < %SOURCE1 >  %{buildroot}%{_modulefiledir}/%{version}
+%{?altcc:%altcc_writemodule %SOURCE1}
 
 
 %check
@@ -207,10 +177,7 @@ make check
 
 
 %files
-# Own all directory paths
-%dir %{_prefix}
-%dir %{_bindir}
-%dir %{_libdir}
+%{?altcc:%altcc_files -d %{_bindir} %{_libdir}}
 %dir %{_defaultdocdir}/cube/
 %{_defaultdocdir}/cube/AUTHORS
 %{_defaultdocdir}/cube/ChangeLog
@@ -257,10 +224,11 @@ make check
 %{_datadir}/%{shortname}/
 
 %files libs
+%{?altcc:%altcc_files -m %{_libdir}}
 %{_libdir}/lib%{shortname}*.so.7*
-%{_modulefiledir}
 
 %files devel
+%{?altcc:%altcc_files %{_includedir}}
 %{_bindir}/cube-config
 %{_bindir}/cube-config-backend
 %{_bindir}/cube-config-frontend
@@ -276,6 +244,22 @@ make check
 
 
 %changelog
+* Tue May 10 2016 Dave Love <loveshack@fedoraproject.org> - 4.3.4-4
+- Run ldconfig for both main as well as libs (for libgraphwidgetcommon-plugin)
+
+* Mon May  9 2016 Dave Love <loveshack@fedoraproject.org> - 4.3.4-3
+- Run ldconfig for libs package, not main
+
+* Thu May  5 2016 Dave Love <loveshack@fedoraproject.org> - 4.3.4-2
+- Have cube require matching cube-libs
+- Don't do network check for new version
+
+* Wed May  4 2016 Dave Love <loveshack@fedoraproject.org> - 4.3.4-1
+- Update to 4.3.4
+- Adjust for desktop and module files removed from distribution
+- Remove xerces from configure
+- Reinstate smp make
+
 * Wed Feb 03 2016 Fedora Release Engineering <releng@fedoraproject.org> - 4.3.3-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
 
