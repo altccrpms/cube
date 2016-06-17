@@ -240,6 +240,7 @@ make check
 %{_defaultdocdir}/cube/example/
 
 %files doc
+%{?altcc:%altcc_files -d}
 %{_defaultdocdir}/cube/
 
 
